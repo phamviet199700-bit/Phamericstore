@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PHAMERICSTORE - Thanh toán VIP</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+body{background:#0a0a0a;color:#fff}
+header{background:#000;display:flex;justify-content:space-between;align-items:center;padding:15px;border-bottom:2px solid #d4af37;position:sticky;top:0;z-index:10}
+.logo{color:#d4af37;font-weight:bold}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:15px}
+.card{background:#111;border:1px solid #333;border-radius:12px;overflow:hidden;text-align:center}
+.card img{width:100%;height:160px;object-fit:cover}
+.card h4{margin:8px;font-size:12px;height:32px}
+.price{color:#d4af37;font-weight:bold;margin:5px}
+.card button{width:90%;padding:8px;margin:8px 0;border:1px solid #d4af37;background:transparent;color:#d4af37;border-radius:6px}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:none;justify-content:center;align-items:center;z-index:50;padding:15px}
+.box{background:#151515;border:1px solid #d4af37;border-radius:15px;width:100%;max-width:400px;padding:20px;max-height:90vh;overflow:auto}
+.box img{width:100%;border-radius:10px}
+.box input, .box select{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #333;background:#222;color:#fff}
+.btn-gold{background:#d4af37;color:#000;border:none;padding:12px;width:100%;border-radius:8px;font-weight:bold;margin-top:10px}
+.btn-close{background:#333;color:#fff;border:none;padding:10px;width:100%;border-radius:8px;margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">👑 PHAMERICSTORE - 25 SP</div>
+<div onclick="openCart()">🛒 <span id="count">0</span></div>
+</header>
+<div id="shop" class="grid"></div>
+
+<!-- XEM CHI TIẾT -->
+<div id="detail" class="modal" onclick="closeDetail()">
+<div class="box" onclick="event.stopPropagation()">
+<img id="d-img"><h3 id="d-name" style="margin:10px 0"></h3>
+<p id="d-spec" style="color:#888;font-size:12px"></p>
+<div id="d-price" style="color:#d4af37;font-weight:bold;font-size:18px;margin:10px 0"></div>
+<p style="font-size:12px;line-height:1.5">✅ Máy chính hãng VN/A • Fullbox 100% • Pin 100% • Bảo hành VIP 12 tháng 1 đổi 1 • Tặng ốp lưng + dán cường lực + sạc nhanh 25W</p>
+<button class="btn-gold" onclick="addFromDetail()">THÊM VÀO GIỎ - MUA NGAY</button>
+<button class="btn-close" onclick="closeDetail()">Đóng</button>
+</div>
+</div>
+
+<!-- GIỎ HÀNG + THANH TOÁN -->
+<div id="cart" class="modal">
+<div class="box">
+<h3>🛒 Giỏ hàng PHAMERICSTORE</h3>
+<div id="cart-items" style="margin:12px 0;font-size:13px"></div>
+<div style="font-weight:bold">Tổng: <span id="total" style="color:#d4af37">0</span>đ</div>
+<hr style="margin:12px 0;border:1px solid #222">
+<h4>Thông tin đặt hàng</h4>
+<input id="cust-name" placeholder="Họ tên của anh/chị">
+<input id="cust-phone" placeholder="Số điện thoại Zalo">
+<input id="cust-addr" placeholder="Địa chỉ nhận hàng">
+<select id="pay-type"><option>COD - Thanh toán khi nhận hàng</option><option>Chuyển khoản ngân hàng</option><option>Quẹt thẻ tại shop</option></select>
+<button class="btn-gold" onclick="checkout()">ĐẶT HÀNG - THANH TOÁN NGAY</button>
+<button class="btn-close" onclick="closeCart()">Tiếp tục mua</button>
+</div>
+</div>
+
+<script>
+const phones=[
+{id:1,name:"iPhone 15 Pro Max 1TB Titan",price:46990000,img:"https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400",spec:"256GB • Titan tự nhiên • 120Hz"},
+{id:2,name:"Samsung S24 Ultra 512GB",price:31990000,img:"https://images.unsplash.com/photo-1610945264803-c22b62d2a7b3?w=400",spec:"512GB • Bút S-Pen • Camera 200MP"},
+{id:3,name:"Vertu Signature Gold",price:189000000,img:"https://images.unsplash.com/photo-1585060544812-6b45742d762f?w=400",spec:"Thủ công • Vàng khối • Da cá sấu"},
+{id:4,name:"iPhone 14 Pro Max Gold",price:28990000,img:"https://images.unsplash.com/photo-1591337676887-a217a6970a8a?w=400",spec:"256GB • Gold • Fullbox"},
+{id:5,name:"Samsung Z Fold 5 VIP",price:35990000,img:"https://images.unsplash.com/photo-1610945265064-0e34e032ffa8?w=400",spec:"Màn gập • 12GB RAM"},
+{id:6,name:"iPhone 15 Pro Natural",price:27990000,img:"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",spec:"128GB • Natural Titan"},
+{id:7,name:"Vertu Aster P Black",price:99000000,img:"https://images.unsplash.com/photo-1525598912003-663126343e1f?w=400",spec:"Da đen • Chính hãng"},
+{id:8,name:"Samsung S23 Ultra VIP",price:21990000,img:"https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400",spec:"256GB • Camera 200MP"},
+{id:9,name:"iPhone 13 Pro Max VIP",price:18990000,img:"https://images.unsplash.com/photo-1556656793-08538906a9f8?w=400",spec:"256GB • Sierra Blue"},
+{id:10,name:"Vertu Constellation",price:125000000,img:"https://images.unsplash.com/photo-1585060544812-6b45742d762f?w=400",spec:"Dạ quang • Bản giới hạn"},
+{id:11,name:"iPhone 12 Pro Max Gold",price:15990000,img:"https://images.unsplash.com/photo-1607936854279-55e8a4c64888?w=400",spec:"128GB • Gold"},
+{id:12,name:"Samsung Z Flip 5",price:19990000,img:"https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400",spec:"Màn gập dọc • Nhỏ gọn"},
+{id:13,name:"iPhone 15 Plus Pink",price:22990000,img:"https://images.unsplash.com/photo-1592899677977-9bb10ba128a5?w=400",spec:"128GB • Hồng • Pin trâu"},
+{id:14,name:"Vertu iVertu 5G Gold",price:155000000,img:"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",spec:"5G • Vàng 18K"},
+{id:15,name:"Samsung S24 Plus",price:23990000,img:"https://images.unsplash.com/photo-1610945265078-385e6a6e2a2a?w=400",spec:"256GB • Màn 6.7 inch"},
+{id:16,name:"iPhone 11 Pro Max VIP",price:10990000,img:"https://images.unsplash.com/photo-1574944985070-8f3ebc6b79a2?w=400",spec:"64GB • Đã qua sử dụng VIP"},
+{id:17,name:"Vertu Signature Touch",price:78000000,img:"https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400",spec:"Cảm ứng • Da bê"},
+{id:18,name:"iPhone SE 2024 VIP",price:8990000,img:"https://images.unsplash.com/photo-1592899677977-9bb10ba128a5?w=400",spec:"Mới • Nhỏ gọn"},
+{id:19,name:"Samsung S22 Ultra",price:16990000,img:"https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400",spec:"256GB • Đen"},
+{id:20,name:"iPhone 15 Pro Max Black",price:34990000,img:"https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400",spec:"Black Titan"},
+{id:21,name:"Vertu New Signature",price:210000000,img:"https://images.unsplash.com/photo-1525598912003-663126343e1f?w=400",spec:"2024 • Kim cương"},
+{id:22,name:"Samsung Note 20 Ultra Gold",price:13990000,img:"https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400",spec:"Gold • Bút S-Pen"},
+{id:23,name:"iPhone 14 Pro Purple",price:20990000,img:"https://images.unsplash.com/photo-1591337676887-a217a6970a8a?w=400",spec:"Tím • 128GB"},
+{id:24,name:"Vertu Ayxta Fold Gold",price:95000000,img:"https://images.unsplash.com/photo-1585060544812-6b45742d762f?w=400",spec:"Gập • Vàng"},
+{id:25,name:"PHAMERIC Limited Edition",price:50000000,img:"https://images.unsplash.com/photo-1592899677977-9bb10ba128a5?w=400",spec:"Bản giới hạn • Khắc tên"}
+];
+let cart=[];let current=null;
+let shop=document.getElementById('shop');
+phones.forEach(p=>{
+shop.innerHTML+=`<div class="card" onclick="viewDetail(${p.id})"><img src="${p.img}"><h4>${p.name}</h4><div class="price">${p.price.toLocaleString()}đ</div><button>XEM - THÊM GIỎ</button></div>`
+});
+function viewDetail(id){
+current=phones.find(x=>x.id==id);
+document.getElementById('d-img').src=current.img;
+document.getElementById('d-name').innerText=current.name;
+document.getElementById('d-price').innerText=current.price.toLocaleString()+'đ';
+document.getElementById('d-spec').innerText=current.spec;
+document.getElementById('detail').style.display='flex';
+}
+function closeDetail(){document.getElementById('detail').style.display='none'}
+function addFromDetail(){cart.push(current);document.getElementById('count').innerText=cart.length;closeDetail();openCart()}
+function openCart(){
+document.getElementById('cart').style.display='flex';
+let t=0;let h='';cart.forEach((c,i)=>{t+=c.price;h+=`${i+1}. ${c.name} - ${c.price.toLocaleString()}đ<br>`});
+document.getElementById('total').innerText=t.toLocaleString();
+document.getElementById('cart-items').innerHTML=h||'Chưa có sản phẩm';
+}
+function closeCart(){document.getElementById('cart').style.display='none'}
+function checkout(){
+let name=document.getElementById('cust-name').value||'Khach VIP';
+let phone=document.getElementById('cust-phone').value||'Chua co SDT';
+let addr=document.getElementById('cust-addr').value||'Chua co dia chi';
+let pay=document.getElementById('pay-type').value;
+let total=cart.reduce((s,i)=>s+i.price,0);
+if(cart.length==0){alert('Giỏ hàng trống!');return}
+let text=`🔥 DON HANG MOI PHAMERICSTORE 🔥%0A👤 ${name}%0A📞 ${phone}%0A📍 ${addr}%0A💳 ${pay}%0A%0A🛒 SAN PHAM:%0A${cart.map(c=>`- ${c.name} (${c.price.toLocaleString()}d)`).join('%0A')}%0A%0A💰 TONG: ${total.toLocaleString()}d`;
+window.open('https://zalo.me/0865011227?text='+text,'_blank');
+alert('Đã gửi đơn qua Zalo! Shop sẽ gọi lại ngay!');
+}
+</script>
+</body>
+</html>
